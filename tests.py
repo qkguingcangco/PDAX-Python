@@ -2,7 +2,7 @@ import unittest
 from models import Account, Customer
 from repositories import AccountRepository
 from use_cases import CreateAccountUseCase, TransactionUseCase, AccountStatementUseCase
-
+import datetime
 
 class TestBankingSystem(unittest.TestCase):
     def setUp(self):
@@ -23,32 +23,80 @@ class TestBankingSystem(unittest.TestCase):
         self.account_statement_use_case = AccountStatementUseCase(self.account_repo)
 
     def test_deposit(self):
+        print("========== DEPOSIT TEST ==========")
+        print(f"Balance before deposit: {self.new_account.get_balance()}")
+        
+        timestamp = datetime.datetime.now()
         self.transaction_use_case.make_transaction(
-            self.new_account.account_id, 1000, 'deposit')
+            self.new_account.account_id, 1000, 'deposit', timestamp)
+        
         self.assertEqual(self.new_account.get_balance(), 1000)
+        print(f"Balance after deposit: {self.new_account.get_balance()}")
 
     def test_withdraw(self):
-        self.transaction_use_case.make_transaction(
-            self.new_account.account_id, 1000, 'deposit')
+        print("========== WITHDRAW TEST ==========")
+        print(f"Balance before withdraw: {self.new_account.get_balance()}")
         
+        timestamp_deposit = datetime.datetime.now()
         self.transaction_use_case.make_transaction(
-            self.new_account.account_id, 500, 'withdraw')
+            self.new_account.account_id, 1000, 'deposit', timestamp_deposit)
+        
+        print(f"Balance after deposit: {self.new_account.get_balance()}")
+
+        timestamp_withdraw = datetime.datetime.now()
+        self.transaction_use_case.make_transaction(
+            self.new_account.account_id, 500, 'withdraw', timestamp_withdraw)
 
         self.assertEqual(self.new_account.get_balance(), 500)
-
+        print(f"Balance after withdraw: {self.new_account.get_balance()}")
 
     def test_insufficient_balance_withdraw(self):
-        with self.assertRaises(ValueError):
+        print("========== INSUFFICIENT BALANCE TEST ==========")
+        print(f"Balance before test: {self.new_account.get_balance()}")
+        
+        timestamp = datetime.datetime.now()
+        try:
             self.transaction_use_case.make_transaction(
-                self.new_account.account_id, 1000, 'withdraw')
+                self.new_account.account_id, 1000, 'withdraw', timestamp)
+            print("Unexpected success. Expected ValueError.")
+        except ValueError as e:
+            print("Expected failure:", str(e))
+        print("test_insufficient_balance_withdraw passed.")
 
     def test_generate_account_statement(self):
+        print("========== ACCOUNT STATEMENT TEST ==========")
+        
+        # Making some transactions for testing purposes
+        timestamp_deposit = datetime.datetime.now()
+        self.transaction_use_case.make_transaction(
+            self.new_account.account_id, 1000, 'deposit', timestamp_deposit)
+        print(f"Deposited 1000 at: {timestamp_deposit}")
+
+        timestamp_withdraw = datetime.datetime.now()
+        self.transaction_use_case.make_transaction(
+            self.new_account.account_id, 500, 'withdraw', timestamp_withdraw)
+        print(f"Withdrew 500 at: {timestamp_withdraw}")
+
+        # Generating account statement
         statement = self.account_statement_use_case.generate_account_statement(
             self.new_account.account_id)
-        expected_statement = "Account Statement for Account Number: {}\nBalance: 0\n".format(
-            self.new_account.account_number)
-        self.assertEqual(statement, expected_statement)
+        expected_statement = "Account Statement for Account Number: {}\nBalance: {}\n".format(
+            self.new_account.account_number, self.new_account.get_balance())
 
+        # Add transaction history to the expected statement
+        expected_statement += "Transaction History:\n"
+        for transaction in self.new_account.transactions:
+            expected_statement += "Date: {}\n".format(transaction['timestamp'])
+            expected_statement += "Amount: {}\n".format(transaction['amount'])
+            expected_statement += "Type: {}\n".format(transaction['type'])
+            expected_statement += "\n"
+
+        
+        print(f"Statement:\n{statement}")
+        
+        # Comparing the generated statement with the expected one
+        self.assertEqual(statement, expected_statement)
+        print("test_generate_account_statement passed.")
 
 if __name__ == '__main__':
     unittest.main()

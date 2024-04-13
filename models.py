@@ -4,13 +4,16 @@ class Account:
         self.customer_id = customer_id
         self.account_number = account_number
         self.balance = balance
+        self.transactions = []  # List to track transactions
 
-    def deposit(self, amount):
+    def deposit(self, amount, timestamp):
         self.balance += amount
+        self.transactions.append({'type': 'deposit', 'amount': amount, 'timestamp': timestamp})
 
-    def withdraw(self, amount):
+    def withdraw(self, amount, timestamp):
         if self.balance >= amount:
             self.balance -= amount
+            self.transactions.append({'type': 'withdrawal', 'amount': amount, 'timestamp': timestamp})
         else:
             raise ValueError("Insufficient balance")
 
