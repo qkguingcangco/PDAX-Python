@@ -13,7 +13,7 @@ class Account:
     def withdraw(self, amount, timestamp):
         if self.balance >= amount:
             self.balance -= amount
-            self.transactions.append({'type': 'withdrawal', 'amount': amount, 'timestamp': timestamp})
+            self.transactions.append({'type': 'withdraw', 'amount': amount, 'timestamp': timestamp})
         else:
             raise ValueError("Insufficient balance")
 

@@ -2,7 +2,8 @@ from models import Account
 
 
 class CreateAccountUseCase:
-    def create_account(self, customer_id, name, email, phone_number):
+    def create_account(self, customer):
+        customer_id = customer.customer_id
         # Generate account_number
         account_number = "PDAX" + str(customer_id)
         return Account(customer_id, customer_id, account_number, 0)

@@ -15,7 +15,7 @@ class TestBankingSystem(unittest.TestCase):
         # Create a new account
         self.create_account_use_case = CreateAccountUseCase()
         self.new_account = self.create_account_use_case.create_account(
-            self.customer.customer_id, self.customer.name, self.customer.email, self.customer.phone_number)
+            self.customer)
         self.account_repo.save_account(self.new_account)
 
         self.transaction_use_case = TransactionUseCase(self.account_repo)
